@@ -1,0 +1,90 @@
+{
+  "categories": ["All", "Classic", "Executive", "Cottage", "Suite"],
+  "rooms": [
+    {
+      "id": 1,
+      "name": "Classic Room",
+      "category": "Classic",
+      "price": 2500,
+      "capacity": "2 Guests",
+      "size": "250 sqft",
+      "totalRooms": 4,
+      "idealFor": "Couples / Business Travelers",
+      "image": "ClassicImage",
+      "amenities": [
+        "Air Conditioning",
+        "LED TV",
+        "Free Wi-Fi",
+        "Work Desk",
+        "Attached Bathroom",
+        "Room Service"
+      ],
+      "description": "A comfortable and cozy room designed for couples and business travelers, offering essential modern amenities for a relaxing stay.",
+      "gallery": ["ClassicImage", "ClassicImage1", "ClassicImage2"]
+    },
+    {
+      "id": 2,
+      "name": "Executive Room",
+      "category": "Executive",
+      "price": 4000,
+      "capacity": "3 Guests",
+      "size": "350 sqft",
+      "totalRooms": 10,
+      "idealFor": "Families & Premium Stay",
+      "image": "ExecutiveImage",
+      "amenities": [
+        "Air Conditioning",
+        "Smart LED TV",
+        "High-Speed Wi-Fi",
+        "Tea & Coffee Maker",
+        "Seating Area",
+        "Modern Bathroom"
+      ],
+      "description": "Spacious and well-designed room with upgraded interiors, perfect for families and guests seeking extra comfort.",
+      "gallery": ["ExecutiveImage", "ExecutiveImage1", "ExecutiveImage2"]
+    },
+    {
+      "id": 3,
+      "name": "Cottage / Villa",
+      "category": "Cottage",
+      "price": 6000,
+      "capacity": "4 Guests",
+      "size": "500 sqft",
+      "totalRooms": 12,
+      "idealFor": "Families & Nature Lovers",
+      "image": "CottageImage",
+      "amenities": [
+        "Private Space",
+        "Air Conditioning",
+        "Free Wi-Fi",
+        "Garden Area",
+        "Spacious Layout",
+        "Room Service"
+      ],
+      "description": "Enjoy a peaceful and private stay surrounded by nature in our cottage-style accommodation, ideal for families and relaxation.",
+      "gallery": ["CottageImage", "CottageImage1", "CottageImage2"]
+    },
+    {
+      "id": 4,
+      "name": "Suite Room",
+      "category": "Suite",
+      "price": 8000,
+      "capacity": "4 Guests",
+      "size": "600 sqft",
+      "totalRooms": 3,
+      "idealFor": "Luxury Stay & Special Occasions",
+      "image": "SuiteImage",
+      "amenities": [
+        "Separate Living Area",
+        "King Size Bed",
+        "Premium Interiors",
+        "Smart TV",
+        "Air Conditioning",
+        "Spacious Bathroom",
+        "Exclusive Room Service"
+      ],
+      "description": "Experience luxury and elegance with a spacious suite featuring a separate living area and premium comfort, perfect for special occasions.",
+      "gallery": ["SuiteImage", "SuiteImage1"]
+    }
+  ]
+}

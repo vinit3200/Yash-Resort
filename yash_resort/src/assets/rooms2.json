@@ -1,0 +1,137 @@
+{
+  "categories": ["All", "Classic", "Executive", "Suite", "Villa"],
+  "rooms": [
+    {
+      "id": 1,
+      "name": "Classic Forest Room",
+      "category": "Classic",
+      "price": "4,500",
+      "capacity": "2 Guests",
+      "size": "250 sqft",
+      "image": "classicRoomImage",
+      "amenities": ["King Bed", "Garden View", "Wi-Fi", "AC"],
+      "description": "Experience cozy comfort in our Classic Forest Room, perfect for couples seeking a peaceful retreat surrounded by nature. The room features a premium king-size bed with garden views.",
+      "fullAmenities": [
+        { "icon": "bed", "name": "Premium King Bed", "description": "Luxurious bedding with Egyptian cotton sheets" },
+        { "icon": "leaf", "name": "Garden View", "description": "Serene views of the resort's lush gardens" },
+        { "icon": "wifi", "name": "High-Speed Wi-Fi", "description": "Complimentary internet connectivity" },
+        { "icon": "wind", "name": "Air Conditioning", "description": "Climate control for your comfort" },
+        { "icon": "droplets", "name": "Modern Bathroom", "description": "Shower with premium toiletries" },
+        { "icon": "tv", "name": "LED TV", "description": "Satellite channels and streaming services" },
+        { "icon": "coffee", "name": "Tea & Coffee Station", "description": "In-room beverage facilities" },
+        { "icon": "lock", "name": "Safe Locker", "description": "Secure valuables storage" }
+      ],
+      "gallery": ["classicRoomImage", "heroImage", "suiteImage"]
+    },
+    {
+      "id": 2,
+      "name": "Executive Lake Suite",
+      "category": "Executive",
+      "price": "6,500",
+      "capacity": "2 Guests",
+      "size": "400 sqft",
+      "image": "heroImage",
+      "amenities": ["Lake View", "Balcony", "Smart TV", "Mini Bar"],
+      "description": "Indulge in elegance with our Executive Lake Suite offering breathtaking views of the pristine lake. This spacious suite combines luxury with comfort, featuring a private balcony and premium amenities.",
+      "fullAmenities": [
+        { "icon": "waves", "name": "Lake View Balcony", "description": "Private balcony overlooking the lake" },
+        { "icon": "crown", "name": "King Bed Suite Layout", "description": "Separate living and sleeping areas" },
+        { "icon": "tv", "name": "Smart TV System", "description": "Latest entertainment technology" },
+        { "icon": "coffee", "name": "Mini Bar", "description": "Refrigerated beverages and snacks" },
+        { "icon": "droplets", "name": "Premium Bathroom", "description": "Rainfall shower and luxury toiletries" },
+        { "icon": "armchair", "name": "Work Desk", "description": "Business facilities and chair" },
+        { "icon": "wind", "name": "Blackout Curtains", "description": "Enhanced privacy and light control" },
+        { "icon": "wifi", "name": "Bluetooth Speaker", "description": "Stream your favorite music" }
+      ],
+      "gallery": ["heroImage", "classicRoomImage", "suiteImage"]
+    },
+    {
+      "id": 3,
+      "name": "Royal Heritage Suite",
+      "category": "Suite",
+      "price": "9,500",
+      "capacity": "3 Guests",
+      "size": "600 sqft",
+      "image": "suiteImage",
+      "amenities": ["Jacuzzi", "Living Area", "Lake View", "Butler Service"],
+      "description": "Experience ultimate luxury in our Royal Heritage Suite, a masterpiece of elegance and comfort. With exclusive butler service and a personal jacuzzi, this suite is designed for discerning guests.",
+      "fullAmenities": [
+        { "icon": "waves", "name": "Personal Jacuzzi", "description": "Private hot tub on the balcony" },
+        { "icon": "armchair", "name": "Living and Dining Area", "description": "Spacious common spaces for entertaining" },
+        { "icon": "crown", "name": "Butler Service", "description": "24/7 personal butler assistance" },
+        { "icon": "maximize2", "name": "Lake & Valley View", "description": "360-degree scenic views" },
+        { "icon": "bed", "name": "Master Bedroom Suite", "description": "King bed with premium furnishings" },
+        { "icon": "droplets", "name": "Luxury Spa Bathroom", "description": "Double sink, rainfall shower, jacuzzi tub" },
+        { "icon": "coffee", "name": "Wine Cooler", "description": "Climate-controlled beverage station" },
+        { "icon": "crown", "name": "Premium Concierge", "description": "Personalized services and arrangements" }
+      ],
+      "gallery": ["suiteImage", "heroImage", "classicRoomImage"]
+    },
+    {
+      "id": 4,
+      "name": "Private Valley Villa",
+      "category": "Villa",
+      "price": "15,000",
+      "capacity": "6 Guests",
+      "size": "1200 sqft",
+      "image": "suiteImage",
+      "amenities": ["Private Pool", "3 Bedrooms", "Private Deck", "Chef on Call"],
+      "description": "The pinnacle of luxury hospitality. Our Private Valley Villa offers complete privacy with a private swimming pool, multiple bedrooms, and exclusive chef service for an unforgettable experience.",
+      "fullAmenities": [
+        { "icon": "waves", "name": "Private Infinity Pool", "description": "Temperature-controlled pool with loungers" },
+        { "icon": "bed", "name": "3 Luxury Bedrooms", "description": "Multiple premium bedroom suites" },
+        { "icon": "chefhat", "name": "Chef on Call", "description": "In-house chef for custom meals" },
+        { "icon": "coffee", "name": "Full Kitchen", "description": "Professional-grade cooking facilities" },
+        { "icon": "armchair", "name": "Spacious Living Area", "description": "Entertainment center with smart TV" },
+        { "icon": "trees", "name": "Private Deck & Garden", "description": "Exclusive outdoor space with seating" },
+        { "icon": "lock", "name": "Private Entry", "description": "Separate entrance from main resort" },
+        { "icon": "crown", "name": "Concierge Team", "description": "Dedicated staff for all needs" }
+      ],
+      "gallery": ["suiteImage", "heroImage", "classicRoomImage"]
+    },
+    {
+      "id": 5,
+      "name": "Classic Twin Room",
+      "category": "Classic",
+      "price": "4,500",
+      "capacity": "2 Guests",
+      "size": "280 sqft",
+      "image": "classicRoomImage",
+      "amenities": ["Twin Beds", "AC", "Wi-Fi", "Work Desk"],
+      "description": "Perfect for business travelers or friends exploring Bhandardara, our Classic Twin Room offers practicality with comfort. Equipped with dedicated work space and modern amenities.",
+      "fullAmenities": [
+        { "icon": "bed", "name": "Twin Premium Beds", "description": "Individual premium beds for comfort" },
+        { "icon": "armchair", "name": "Work Desk", "description": "Ergonomic desk for business travelers" },
+        { "icon": "wifi", "name": "High-Speed Wi-Fi", "description": "Dedicated internet connection" },
+        { "icon": "wind", "name": "Air Conditioning", "description": "Individual climate control" },
+        { "icon": "droplets", "name": "Modern Bathroom", "description": "Shower with quality toiletries" },
+        { "icon": "tv", "name": "LED TV", "description": "Satellite and streaming channels" },
+        { "icon": "coffee", "name": "Tea & Coffee Maker", "description": "In-room beverage station" },
+        { "icon": "lock", "name": "Electronic Safe", "description": "Secure valuables storage" }
+      ],
+      "gallery": ["classicRoomImage", "heroImage", "suiteImage"]
+    },
+    {
+      "id": 6,
+      "name": "Executive Family Room",
+      "category": "Executive",
+      "price": "7,500",
+      "capacity": "4 Guests",
+      "size": "450 sqft",
+      "image": "heroImage",
+      "amenities": ["2 Double Beds", "Garden View", "Large Bathroom"],
+      "description": "Ideal for families, our Executive Family Room offers ample space and comfort. With two double beds and a large bathroom, it's perfect for small families wanting quality time together.",
+      "fullAmenities": [
+        { "icon": "bed", "name": "2 Double Beds", "description": "Spacious beds for family comfort" },
+        { "icon": "leaf", "name": "Garden View", "description": "Beautiful views of the resort gardens" },
+        { "icon": "droplets", "name": "Large Bathroom", "description": "Spacious with separate shower area" },
+        { "icon": "tv", "name": "Entertainment System", "description": "Multiple screens and streaming" },
+        { "icon": "armchair", "name": "Separate Seating Area", "description": "Lounge space for relaxation" },
+        { "icon": "coffee", "name": "Tea & Coffee Maker", "description": "Beverage station for guests" },
+        { "icon": "wind", "name": "Climate Control", "description": "Individual room temperature" },
+        { "icon": "users", "name": "Family Amenities", "description": "Kid-friendly toiletries and cribs available" }
+      ],
+      "gallery": ["heroImage", "classicRoomImage", "suiteImage"]
+    }
+  ]
+}
