@@ -10,7 +10,7 @@ const bookingSchema = new mongoose.Schema({
   totalAmount: { type: Number, default: 0 },
   paymentMethod: { type: String, enum: ['Online', 'Cash'], default: 'Cash' },
   paymentStatus: { type: String, enum: ['paid', 'pending'], default: 'pending' },
-  bookingStatus: { type: String, enum: ['confirmed', 'pending', 'cancelled'], default: 'confirmed' },
+  bookingStatus: { type: String, enum: ['confirmed', 'check-in', 'check-out', 'cancelled'], default: 'confirmed' },
   specialRequests: { type: String, default: '' },
 }, { timestamps: true });
 

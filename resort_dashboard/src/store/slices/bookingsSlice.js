@@ -1,27 +1,29 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import API from '../../api';
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchBookings = createAsyncThunk('bookings/fetchAll', async (params = {}, { rejectWithValue }) => {
   try {
-    const { data } = await API.get('/bookings', { params });
+    const { data } = await axios.get(`${API_BASE}/bookings`, { params });
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to fetch bookings');
   }
 });
 
-export const fetchAvailability = createAsyncThunk('bookings/fetchAvailability', async ({ resortId, roomType }, { rejectWithValue }) => {
-  try {
-    const { data } = await API.get('/availability', { params: { resortId, roomType } });
-    return data;
-  } catch (err) {
-    return rejectWithValue(err.response?.data?.message || 'Failed to fetch availability');
-  }
-});
+// export const fetchAvailability = createAsyncThunk('bookings/fetchAvailability', async ({ resortId, roomType }, { rejectWithValue }) => {
+//   try {
+//     const { data } = await axios.get(`${API_BASE}/availability`, { params: { resortId, roomType } });
+//     return data;
+//   } catch (err) {
+//     return rejectWithValue(err.response?.data?.message || 'Failed to fetch availability');
+//   }
+// });
 
 export const createBooking = createAsyncThunk('bookings/create', async (bookingData, { rejectWithValue }) => {
   try {
-    const { data } = await API.post('/bookings', bookingData);
+    const { data } = await axios.post(`${API_BASE}/bookings`, bookingData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to create booking');
@@ -30,7 +32,7 @@ export const createBooking = createAsyncThunk('bookings/create', async (bookingD
 
 export const updateBooking = createAsyncThunk('bookings/update', async ({ id, ...bookingData }, { rejectWithValue }) => {
   try {
-    const { data } = await API.put(`/bookings/${id}`, bookingData);
+    const { data } = await axios.put(`${API_BASE}/bookings/${id}`, bookingData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to update booking');
@@ -39,7 +41,7 @@ export const updateBooking = createAsyncThunk('bookings/update', async ({ id, ..
 
 export const deleteBooking = createAsyncThunk('bookings/delete', async (id, { rejectWithValue }) => {
   try {
-    await API.delete(`/bookings/${id}`);
+    await axios.delete(`${API_BASE}/bookings/${id}`);
     return id;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to delete booking');
@@ -67,5 +69,5 @@ const bookingsSlice = createSlice({
   },
 });
 
-export const { clearError } = bookingsSlice.actions;
+// export const { clearError } = bookingsSlice.actions;
 export default bookingsSlice.reducer;

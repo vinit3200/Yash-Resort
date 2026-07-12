@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const Event = require('../models/Event');
 
+
 // GET all events
 router.get('/', async (req, res, next) => {
   try {

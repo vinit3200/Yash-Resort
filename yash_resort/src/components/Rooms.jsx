@@ -35,7 +35,7 @@ const mapRoomToFormType = (room) => {
   }
 
   if (roomMeta.includes("villa") || roomMeta.includes("cottage")) {
-    return "Cottage / Villa";
+    return "Cottage/Villa";
   }
 
   if (roomMeta.includes("deluxe") || roomMeta.includes("executive")) {
@@ -250,7 +250,7 @@ function RoomCard({ room, isPremium, isLuxury, onBookNow }) {
       </div>
       <div className="p-6 xl:p-8 flex-1 flex flex-col">
         <h3 className="font-serif text-2xl text-primary mb-2">{room.name}</h3>
-        <p classNme="text-[9px] tracking-[1px] uppercase text-gold mb-4">{room.idealFor}</p>
+        <p className="text-[9px] tracking-[1px] uppercase text-gold mb-4">{room.idealFor}</p>
         <p className="text-sm font-light text-mutedlight mb-6 line-clamp-3">
           {room.description}
         </p>

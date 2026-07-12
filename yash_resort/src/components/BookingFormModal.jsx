@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box, IconButton, Text, VStack, HStack, Heading,
+  Box, Text, VStack, HStack, Heading,
   ChakraProvider, Portal, Input, Button, Spinner, CloseButton
 } from "@chakra-ui/react";
 import BookingTheme from "./BookingForm/BookingTheme";
 import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-const API_BASE = "http://localhost:5000/api"; // Adjust to your backend port
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const BookingFormModal = ({
   isOpen,
   onClose,
-  initialRoomType = "Classic"
+  initialRoomType = "Classic",
+  initialRoomName = ""
 }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -28,6 +31,30 @@ const BookingFormModal = ({
   });
   const [totalBill, setTotalBill] = useState(0);
   const [availabilityError, setAvailabilityError] = useState("");
+  const [resortId, setResortId] = useState("");
+  const [bookedRanges, setBookedRanges] = useState([]);
+
+  useEffect(() => {
+    if (resortId && formData.roomType) {
+      axios.get(`${API_BASE}/bookings/availability/${resortId}/${encodeURIComponent(formData.roomType)}`)
+        .then(res => setBookedRanges(res.data))
+        .catch(err => console.error("Failed to fetch availability ranges:", err));
+    }
+  }, [resortId, formData.roomType]);
+
+  useEffect(() => {
+    const fetchResort = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/resorts`);
+        if (res.data && res.data.length > 0) {
+          setResortId(res.data[0]._id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch resort info:", err);
+      }
+    };
+    fetchResort();
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -36,34 +63,47 @@ const BookingFormModal = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (initialRoomType) {
+      setFormData(prev => ({ ...prev, roomType: initialRoomType }));
+    }
+  }, [initialRoomType]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const calculateBill = () => {
-    // Basic price mapping - In production, this comes from backend /api/rooms
     const prices = {
-      "Classic": 5000,
-      "Executive": 8000,
-      "Cottage/Villa": 15000,
-      "Suite": 25000
+      "Classic": 2500,
+      "Executive": 4000,
+      "Cottage/Villa": 6000,
+      "Suite": 8000
     };
-    const pricePerNight = prices[formData.roomType] || 5000;
+    
+    const capacity = 2; 
+    const totalGuests = (parseInt(formData.adults) || 1) + (parseInt(formData.children) || 0);
+    const numRoomsNeeded = Math.ceil(totalGuests / capacity);
+
+    const pricePerNight = prices[formData.roomType] || 2500;
     const checkIn = new Date(formData.checkIn);
     const checkOut = new Date(formData.checkOut);
     const diffTime = Math.abs(checkOut - checkIn);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    return diffDays > 0 ? diffDays * pricePerNight : 0;
+    return diffDays > 0 ? (diffDays * pricePerNight * numRoomsNeeded) : 0;
   };
 
   const checkAvailability = async () => {
     setLoading(true);
     setAvailabilityError("");
     try {
-      const { resortId } = JSON.parse(localStorage.getItem('currentResort') || '{"resortId":"6747b1f8e4b0f7a1c1d2e3f4"}'); // Fallback ID
-      const response = await axios.get(`${API_BASE}/bookings/availability/${resortId}/${formData.roomType}`);
+      if (!resortId) {
+        setAvailabilityError("Resort information is loading. Please wait.");
+        return false;
+      }
+      const response = await axios.get(`${API_BASE}/bookings/availability/${resortId}/${encodeURIComponent(formData.roomType)}`);
       const ranges = response.data;
 
       const checkIn = new Date(formData.checkIn);
@@ -107,21 +147,72 @@ const BookingFormModal = ({
   const submitBooking = async (method) => {
     setLoading(true);
     try {
-      const { resortId } = JSON.parse(localStorage.getItem('currentResort') || '{"resortId":"6747b1f8e4b0f7a1c1d2e3f4"}');
+      if (!resortId) throw new Error("Resort ID not found");
 
-      const payload = {
-        ...formData,
-        resortId,
-        totalAmount: totalBill,
-        paymentMethod: method === 'online' ? 'Online' : 'Cash',
-        paymentStatus: method === 'online' ? 'paid' : 'pending',
-        bookingStatus: 'confirmed'
-      };
+      if (method === 'online') {
+        // 1. Create Razorpay Order
+        const orderRes = await axios.post(`${API_BASE}/payments/order`, {
+          amount: totalBill,
+          receipt: `rcpt_${Date.now()}`
+        });
 
-      await axios.post(`${API_BASE}/bookings`, payload);
+        const order = orderRes.data;
 
-      alert("Your sanctuary is booked! A confirmation email and SMS have been sent.");
-      onClose();
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_mock_key",
+          amount: order.amount,
+          currency: "INR",
+          name: "Yash Resort",
+          description: `Booking for ${formData.roomType}`,
+          order_id: order.id,
+          handler: async (response) => {
+            // 2. Verify Payment
+            try {
+              const verifyRes = await axios.post(`${API_BASE}/payments/verify`, response);
+              if (verifyRes.data.success) {
+                // 3. Finalize Booking
+                const payload = {
+                  ...formData,
+                  resortId,
+                  totalAmount: totalBill,
+                  paymentMethod: 'Online',
+                  paymentStatus: 'paid',
+                  bookingStatus: 'confirmed',
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id
+                };
+                await axios.post(`${API_BASE}/bookings`, payload);
+                alert("Payment successful! Your sanctuary is booked.");
+                onClose();
+              }
+            } catch (err) {
+              alert("Payment verification failed. Please contact support.",err.message);
+            }
+          },
+          prefill: {
+            name: formData.name,
+            email: formData.email,
+            contact: formData.phone
+          },
+          theme: { color: "#D4AF37" }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } else {
+        // Cash payment flow
+        const payload = {
+          ...formData,
+          resortId,
+          totalAmount: totalBill,
+          paymentMethod: 'Cash',
+          paymentStatus: 'pending',
+          bookingStatus: 'confirmed'
+        };
+        await axios.post(`${API_BASE}/bookings`, payload);
+        alert("Your sanctuary is reserved! Please pay at the counter upon arrival.");
+        onClose();
+      }
     } catch (err) {
       alert(err.response?.data?.message || "Booking failed. Please try again.");
     } finally {
@@ -135,28 +226,29 @@ const BookingFormModal = ({
     <ChakraProvider value={BookingTheme}>
       <Portal>
         <Box
-          position="fixed" inset="0" zIndex={200} bg="blackAlpha.700"
-          backdropFilter="blur(8px)" onClick={onClose} transition="all 0.3s ease"
+          position="fixed" inset="0" zIndex={200} bg="rgba(0,0,0,0.7)"
+          style={{ backdropFilter: "blur(8px)" }} onClick={onClose}
         />
         <Box
           position="fixed" top="50%" left="50%" transform="translate(-50%, -50%)"
-          zIndex={201} w="full" maxW="lg" maxH="90vh" overflowY="auto"
-          bg="white" borderRadius="2xl" boxShadow="luxury" border="1px solid"
-          borderColor="luxury.gold"
+          zIndex={201} w="full" maxW="lg" maxH="90vh" overflowY={step === 1 ? "auto" : "hidden"}
+          bg="white" borderRadius="2xl" boxShadow="0 20px 50px rgba(0, 0, 0, 0.1)" border="1px solid"
+          borderColor="#D4AF37"
         >
           <CloseButton
             position="absolute" right="15px" top="15px" zIndex={210}
-            color="luxury.gold" fontSize="24px" onClick={onClose}
+            color="#D4AF37" onClick={onClose}
           />
 
           <Box p={{ base: 6, md: 10 }}>
             <VStack gap={2} mb={8} textAlign="center">
-              <Text color="luxury.gold" fontSize="xs" fontWeight="700" textTransform="uppercase" letterSpacing="4px">
+              <Text color="#D4AF37" fontSize="xs" fontWeight="700" textTransform="uppercase" letterSpacing="4px">
                 {step === 1 ? "Reserve Your Stay" : step === 2 ? "Verify Details" : "Complete Payment"}
               </Text>
-              <Heading fontFamily="heading" fontSize="3xl" fontWeight="400" color="luxury.dark">
+              <Heading fontSize="3xl" fontWeight="400" color="#1a1a1a">
                 {step === 1 ? "Booking Details" : step === 2 ? "Review Sanctuary" : "Payment Gateway"}
               </Heading>
+              {initialRoomName && <Text color="gray.500" fontSize="sm">{initialRoomName}</Text>}
             </VStack>
 
             {step === 1 && (
@@ -164,45 +256,79 @@ const BookingFormModal = ({
                 <HStack gap={4}>
                   <Box w="full">
                     <Text as="label" display="block" fontSize="xs" fontWeight="700" color="gray.500" mb={1}>Full Name *</Text>
-                    <Input name="name" value={formData.name} onChange={handleInputChange} placeholder="John Doe" focusBorderColor="luxury.gold" />
+                    <Input name="name" value={formData.name} onChange={handleInputChange} placeholder="John Doe" _focus={{ borderColor: "#D4AF37", boxShadow: "0 0 0 1px #D4AF37" }} />
                   </Box>
                   <Box w="full">
                     <Text as="label" display="block" fontSize="xs" fontWeight="700" color="gray.500" mb={1}>Phone *</Text>
-                    <Input name="phone" value={formData.phone} onChange={handleInputChange} placeholder="+91 ..." focusBorderColor="luxury.gold" />
+                    <Input name="phone" value={formData.phone} onChange={handleInputChange} placeholder="+91 ..." _focus={{ borderColor: "#D4AF37", boxShadow: "0 0 0 1px #D4AF37" }} />
                   </Box>
                 </HStack>
                 <Box>
                   <Text as="label" display="block" fontSize="xs" fontWeight="700" color="gray.500" mb={1}>Email *</Text>
-                  <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" focusBorderColor="luxury.gold" />
+                  <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" _focus={{ borderColor: "#D4AF37", boxShadow: "0 0 0 1px #D4AF37" }} />
+                </Box>
+                <Box>
+                  <Text as="label" display="block" fontSize="xs" fontWeight="700" color="gray.500" mb={1} textAlign="center">Select Stay Dates *</Text>
+                  <Box display="flex" justifyContent="center">
+                    <DatePicker
+                      selected={formData.checkIn ? new Date(formData.checkIn) : null}
+                      onChange={(dates) => {
+                        const [start, end] = dates;
+                        setFormData(prev => ({
+                          ...prev,
+                          checkIn: start ? start.toLocaleDateString('en-CA') : "",
+                          checkOut: end ? end.toLocaleDateString('en-CA') : ""
+                        }));
+                      }}
+                      startDate={formData.checkIn ? new Date(formData.checkIn) : null}
+                      endDate={formData.checkOut ? new Date(formData.checkOut) : null}
+                      selectsRange
+                      inline
+                      minDate={new Date()}
+                      excludeDateIntervals={bookedRanges.map(r => ({
+                        start: new Date(r.checkIn),
+                        end: new Date(r.checkOut)
+                      }))}
+                    />
+                  </Box>
                 </Box>
                 <HStack gap={4}>
                   <Box w="full">
-                    <Text as="label" display="block" fontSize="xs" fontWeight="700" color="gray.500" mb={1}>Check-in *</Text>
-                    <Input name="checkIn" type="date" value={formData.checkIn} onChange={handleInputChange} focusBorderColor="luxury.gold" />
-                  </Box>
-                  <Box w="full">
-                    <Text as="label" display="block" fontSize="xs" fontWeight="700" color="gray.500" mb={1}>Check-out *</Text>
-                    <Input name="checkOut" type="date" value={formData.checkOut} onChange={handleInputChange} focusBorderColor="luxury.gold" />
-                  </Box>
-                </HStack>
-                <HStack gap={4}>
-                  <Box w="full">
                     <Text as="label" display="block" fontSize="xs" fontWeight="700" color="gray.500" mb={1}>Adults</Text>
-                    <Input name="adults" type="number" value={formData.adults} onChange={handleInputChange} />
+                    <Input name="adults" type="number" value={formData.adults} onChange={handleInputChange} _focus={{ borderColor: "#D4AF37", boxShadow: "0 0 0 1px #D4AF37" }} />
                   </Box>
                   <Box w="full">
                     <Text as="label" display="block" fontSize="xs" fontWeight="700" color="gray.500" mb={1}>Children</Text>
-                    <Input name="children" type="number" value={formData.children} onChange={handleInputChange} />
+                    <Input name="children" type="number" value={formData.children} onChange={handleInputChange} _focus={{ borderColor: "#D4AF37", boxShadow: "0 0 0 1px #D4AF37" }} />
                   </Box>
                 </HStack>
+                <Box>
+                  <Text as="label" display="block" fontSize="xs" fontWeight="700" color="gray.500" mb={1}>Special Requests</Text>
+                  <textarea 
+                    name="specialRequests" 
+                    value={formData.specialRequests} 
+                    onChange={handleInputChange} 
+                    placeholder="Anything else we should know?"
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #E2E8F0",
+                      fontSize: "14px",
+                      outline: "none",
+                      minHeight: "80px",
+                      resize: "none"
+                    }}
+                  />
+                </Box>
 
                 {availabilityError && (
                   <Text color="red.500" fontSize="xs" textAlign="center" fontWeight="600">{availabilityError}</Text>
                 )}
 
                 <Button
-                  bg="luxury.gold" color="white" _hover={{ bg: "luxury.dark" }}
-                  py={6} mt={4} onClick={nextStep} isDisabled={loading}
+                  bg="#D4AF37" color="white" _hover={{ bg: "#1a1a1a" }}
+                  py={6} mt={4} onClick={nextStep} disabled={loading}
                 >
                   {loading ? <Spinner size="sm" /> : "Proceed to Review"}
                 </Button>
@@ -211,10 +337,10 @@ const BookingFormModal = ({
 
             {step === 2 && (
               <VStack gap={6} align="stretch">
-                <Box bg="luxury.cream" p={6} borderRadius="xl" border="1px solid" borderColor="luxury.gold/30">
+                <Box bg="#FDFBEE" p={6} borderRadius="xl" border="1px solid" borderColor="rgba(212,175,55,0.3)">
                   <VStack align="start" gap={3}>
-                    <Text fontWeight="700" color="luxury.gold" textTransform="uppercase" fontSize="xs">Guest Information</Text>
-                    <Box h="1px" w="full" bg="luxury.gold" opacity={0.2} mb={3} />
+                    <Text fontWeight="700" color="#D4AF37" textTransform="uppercase" fontSize="xs">Guest Information</Text>
+                    <Box h="1px" w="full" bg="#D4AF37" opacity={0.2} mb={3} />
                     <Text fontSize="sm"><strong>Name:</strong> {formData.name}</Text>
                     <Text fontSize="sm"><strong>Email:</strong> {formData.email}</Text>
                     <Text fontSize="sm"><strong>Phone:</strong> {formData.phone}</Text>
@@ -226,12 +352,12 @@ const BookingFormModal = ({
 
                 <HStack justify="space-between" px={2}>
                   <Text fontSize="lg" color="gray.600">Total Payable</Text>
-                  <Text fontSize="2xl" fontWeight="700" color="luxury.dark">₹{totalBill}</Text>
+                  <Text fontSize="2xl" fontWeight="700" color="#1a1a1a">₹{totalBill}</Text>
                 </HStack>
 
-                <HStack gap={4}>
-                  <Button variant="outline" borderColor="luxury.gold" color="luxury.gold" w="full" onClick={() => setStep(1)}>Back</Button>
-                  <Button bg="luxury.gold" color="white" _hover={{ bg: "luxury.dark" }} w="full" py={6} onClick={nextStep}>Confirm Details</Button>
+                <HStack gap={4} justify="center">
+                  <Button variant="outline" borderColor="#D4AF37" color="#D4AF37" flex="1" maxW="200px" py={6} onClick={() => setStep(1)}>Back</Button>
+                  <Button bg="#D4AF37" color="white" _hover={{ bg: "#1a1a1a" }} flex="1" maxW="200px" py={6} onClick={nextStep}>Confirm Details</Button>
                 </HStack>
               </VStack>
             )}
@@ -243,17 +369,17 @@ const BookingFormModal = ({
                 </Box>
 
                 <Button
-                  variant="outline" borderColor="luxury.gold" color="luxury.gold"
-                  py={6} onClick={() => submitBooking('cash')} isDisabled={loading}
+                  variant="outline" borderColor="#D4AF37" color="#D4AF37"
+                  py={6} onClick={() => submitBooking('cash')} disabled={loading}
                 >
                   Cash on Check-in (Pay at Counter)
                 </Button>
 
-                <Box h="1px" w="full" bg="luxury.gold" opacity={0.2} />
+                <Box h="1px" w="full" bg="#D4AF37" opacity={0.2} />
 
                 <Button
-                  bg="luxury.gold" color="white" _hover={{ bg: "luxury.dark" }}
-                  py={6} onClick={() => submitBooking('online')} isDisabled={loading}
+                  bg="#D4AF37" color="white" _hover={{ bg: "#1a1a1a" }}
+                  py={6} onClick={() => submitBooking('online')} disabled={loading}
                 >
                   Pay Now via RazorPay
                 </Button>
@@ -262,7 +388,7 @@ const BookingFormModal = ({
               </VStack>
             )}
           </Box>
-          <Box h="6px" w="full" bgGradient="to-r" gradientFrom="luxury.gold/10" gradientVia="luxury.gold" gradientTo="luxury.gold/10" opacity={0.4} />
+          <Box h="6px" w="full" bgGradient="to-r" gradientFrom="rgba(212,175,55,0.1)" gradientVia="#D4AF37" gradientTo="rgba(212,175,55,0.1)" opacity={0.4} />
         </Box>
       </Portal>
     </ChakraProvider>

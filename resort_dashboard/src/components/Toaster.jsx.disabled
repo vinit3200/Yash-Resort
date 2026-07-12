@@ -1,0 +1,19 @@
+import {
+  Toaster as ChakraToaster,
+} from "@chakra-ui/react"
+import { toaster } from "../utils/toaster"
+
+const Toaster = () => {
+  return (
+    <ChakraToaster toaster={toaster}>
+      {(toast) => (
+        <div key={toast.id} className="chakra-toast">
+          <strong>{toast.title}</strong>
+          {toast.description && <p>{toast.description}</p>}
+        </div>
+      )}
+    </ChakraToaster>
+  )
+}
+
+export default Toaster;

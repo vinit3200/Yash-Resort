@@ -1,9 +1,9 @@
-import { Box, Flex, Text, Icon } from '@chakra-ui/react';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 
 const MotionBox = motion.create(Box);
 
-const StatsCard = ({ title, value, icon, prefix = '', suffix = '', delay = 0 }) => {
+const StatsCard = ({ title, value, icon: IconComp, prefix = '', suffix = '', delay = 0 }) => {
   return (
     <MotionBox
       initial={{ opacity: 0, y: 20 }}
@@ -33,7 +33,7 @@ const StatsCard = ({ title, value, icon, prefix = '', suffix = '', delay = 0 }) 
           left={0}
           right={0}
           h="3px"
-          bgGradient="linear(to-r, #C5A059, #E0CDA8)"
+          background="linear-gradient(to right, #C5A059, #E0CDA8)"
           opacity={0}
           transition="opacity 0.4s ease"
           _groupHover={{ opacity: 1 }}
@@ -72,7 +72,7 @@ const StatsCard = ({ title, value, icon, prefix = '', suffix = '', delay = 0 }) 
             transition="all 0.3s ease"
             _groupHover={{ bg: 'rgba(197, 160, 89, 0.15)' }}
           >
-            <Icon as={icon} boxSize={5} color="#C5A059" />
+            <IconComp size={20} color="#C5A059" />
           </Flex>
         </Flex>
 

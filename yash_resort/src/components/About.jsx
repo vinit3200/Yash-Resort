@@ -92,7 +92,7 @@ const values = [
 const roomBreakdown = [
   { type: "Classic", count: 4, color: "bg-gold" },
   { type: "Executive", count: 10, color: "bg-gold" },
-  { type: "Cottage / Villa", count: 12, color: "bg-gold" },
+  { type: "Cottage/Villa", count: 12, color: "bg-gold" },
   { type: "Suite", count: 3, color: "bg-gold" },
 ];
 

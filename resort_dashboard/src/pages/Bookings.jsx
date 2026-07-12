@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Flex, Button, Icon, useDisclosure, Badge, useToast, Text } from '@chakra-ui/react';
+import { Box, Flex, Button, Badge, Text } from '@chakra-ui/react';
 import { Plus } from 'lucide-react';
 import { fetchBookings, createBooking, updateBooking, deleteBooking } from '../store/slices/bookingsSlice';
 import { fetchResorts } from '../store/slices/resortsSlice';
 import DataTable from '../components/DataTable';
 import FormModal from '../components/FormModal';
+import { toaster } from '../utils/toaster';
 
 const Bookings = () => {
   const dispatch = useDispatch();
   const { items, loading, error } = useSelector(state => state.bookings);
   const resorts = useSelector(state => state.resorts.items);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
   const [editData, setEditData] = useState(null);
-  const toast = useToast();
 
   useEffect(() => {
     dispatch(fetchBookings());
@@ -21,8 +21,8 @@ const Bookings = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (error) toast({ title: error, status: 'error', duration: 4000, position: 'top' });
-  }, [error, toast]);
+    if (error) toaster.create({ title: error, type: 'error', duration: 4000 });
+  }, [error]);
 
   // Walk-in/Manual Booking Fields (Simplified to match Backend Model)
   const newBookingFields = [
@@ -37,13 +37,13 @@ const Bookings = () => {
     { name: 'totalAmount', label: 'Total Amount (₹)', type: 'number' },
     { name: 'paymentMethod', label: 'Payment Method', type: 'select', options: ['Online', 'Cash'], defaultValue: 'Cash' },
     { name: 'paymentStatus', label: 'Payment Status', type: 'select', options: ['paid', 'pending'], defaultValue: 'pending' },
-    { name: 'bookingStatus', label: 'Booking Status', type: 'select', options: ['confirmed', 'pending', 'cancelled'], defaultValue: 'confirmed' },
+    { name: 'bookingStatus', label: 'Booking Status', type: 'select', options: ['confirmed', 'check-in', 'check-out', 'cancelled'], defaultValue: 'confirmed' },
     { name: 'specialRequests', label: 'Special Requests', type: 'textarea' },
   ];
 
   const editBookingFields = [
     { name: 'paymentStatus', label: 'Payment Status', type: 'select', options: ['paid', 'pending'] },
-    { name: 'bookingStatus', label: 'Booking Status', type: 'select', options: ['confirmed', 'pending', 'cancelled'] },
+    { name: 'bookingStatus', label: 'Booking Status', type: 'select', options: ['confirmed', 'check-in', 'check-out', 'cancelled'] },
     { name: 'totalAmount', label: 'Total Amount (₹)', type: 'number' },
     { name: 'specialRequests', label: 'Special Requests', type: 'textarea' },
   ];
@@ -56,8 +56,8 @@ const Bookings = () => {
       guests: Number(data.guests) || 1,
       totalAmount: Number(data.totalAmount) || 0,
     })).unwrap();
-    toast({ title: 'Guest added & Room assigned', status: 'success', duration: 2000, position: 'top' });
-    onClose();
+    toaster.create({ title: 'Guest added & Room assigned', type: 'success', duration: 2000 });
+    setIsOpen(false);
   };
 
   const handleEditSubmit = async (data) => {
@@ -65,18 +65,18 @@ const Bookings = () => {
       id: editData._id,
       ...data,
     })).unwrap();
-    toast({ title: 'Booking updated', status: 'success', duration: 2000, position: 'top' });
-    onClose();
+    toaster.create({ title: 'Booking updated', type: 'success', duration: 2000 });
+    setIsOpen(false);
   };
 
   const handleEdit = (row) => {
     setEditData(row);
-    onOpen();
+    setIsOpen(true);
   };
 
   const handleDelete = async (id) => {
     await dispatch(deleteBooking(id)).unwrap();
-    toast({ title: 'Booking deleted', status: 'success', duration: 2000, position: 'top' });
+    toaster.create({ title: 'Booking deleted', type: 'success', duration: 2000 });
   };
 
   const columns = useMemo(() => [
@@ -101,16 +101,46 @@ const Bookings = () => {
       return <Badge bg={c[row.paymentStatus]?.bg} color={c[row.paymentStatus]?.color} borderRadius="8px" px={3} py={1} fontSize="11px" fontWeight="600">{row.paymentStatus}</Badge>;
     }},
     { header: 'Status', render: (row) => {
-      const c = { confirmed: { bg: 'blue.50', color: 'blue.600' }, pending: { bg: 'gray.50', color: 'gray.600' }, cancelled: { bg: 'red.50', color: 'red.600' } };
+      const c = { 
+        confirmed: { bg: 'blue.50', color: 'blue.600' }, 
+        'check-in': { bg: 'green.50', color: 'green.600' }, 
+        'check-out': { bg: 'purple.50', color: 'purple.600' }, 
+        cancelled: { bg: 'red.50', color: 'red.600' } 
+      };
       return <Badge bg={c[row.bookingStatus]?.bg} color={c[row.bookingStatus]?.color} borderRadius="8px" px={3} py={1} fontSize="11px" fontWeight="600">{row.bookingStatus}</Badge>;
     }},
   ], []);
 
   return (
-    <Box>
-      <Flex justify="space-between" align="center" mb={6}>
-        <Text fontFamily="'Cormorant Garamond', serif" fontSize="20px" fontWeight="500" color="#7A7A7A">Manage bookings & Walk-in guests</Text>
-        <Button bg="#3D2010" color="white" _hover={{ bg: '#2A1309' }} borderRadius="12px" leftIcon={<Icon as={Plus} boxSize={4} />} onClick={() => { setEditData(null); onOpen(); }} fontSize="14px">New Guest Booking</Button>
+    <Box pb={10}>
+      <Flex justify="space-between" align="center" mb={10} flexWrap="wrap" gap={4}>
+        <Box>
+          <Text 
+            fontFamily="'Cormorant Garamond', serif" 
+            fontSize="32px" 
+            fontWeight="600" 
+            color="#3D2010"
+            lineHeight="1.2"
+          >
+            Reservations
+          </Text>
+          <Text fontSize="14px" color="#7A7A7A" mt={1}>Manage room assignments, check-ins and payments</Text>
+        </Box>
+        <Button 
+          px={6} 
+          h="52px"
+          bg="#3D2010" 
+          color="white" 
+          _hover={{ bg: '#2A1309', transform: 'translateY(-1px)', boxShadow: '0 4px 12px rgba(61,32,16,0.15)' }} 
+          borderRadius="14px" 
+          onClick={() => { setEditData(null); setIsOpen(true); }} 
+          fontSize="14px"
+          fontWeight="600"
+          gap={2}
+          transition="all 0.3s"
+        >
+          <Plus size={18} /> New Guest Booking
+        </Button>
       </Flex>
       <DataTable
         columns={columns}
@@ -121,12 +151,12 @@ const Bookings = () => {
         searchPlaceholder="Search bookings..."
         filters={[
           { key: 'paymentStatus', label: 'Payment', options: ['paid', 'pending'] },
-          { key: 'bookingStatus', label: 'Status', options: ['confirmed', 'pending', 'cancelled'] },
+          { key: 'bookingStatus', label: 'Status', options: ['confirmed', 'check-in', 'check-out', 'cancelled'] },
         ]}
       />
       <FormModal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={() => setIsOpen(false)}
         title={editData ? 'Update Status' : 'Quick Book Walk-in Guest'}
         fields={editData ? editBookingFields : newBookingFields}
         onSubmit={editData ? handleEditSubmit : handleNewSubmit}

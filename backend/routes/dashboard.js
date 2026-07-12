@@ -17,11 +17,16 @@ router.get('/stats', async (req, res, next) => {
     const bookedRooms = await Room.countDocuments({ status: 'Booked' });
     const occupancyRate = totalRooms > 0 ? Math.round((bookedRooms / totalRooms) * 100) : 0;
 
-    const activeGuests = await Booking.countDocuments({ bookingStatus: 'Checked-In' });
+    // Active guests = bookings with confirmed/check-in status where checkOut hasn't passed
+    const now = new Date();
+    const activeGuests = await Booking.countDocuments({
+      bookingStatus: { $in: ['confirmed', 'check-in'] },
+      checkOut: { $gte: now }
+    });
 
-    // Revenue calculation
-    const paidBookings = await Booking.find({ paymentStatus: 'Paid' });
-    const totalRevenue = paidBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+    // Revenue calculation - sum of all bookings (both paid and pending)
+    const allBookings = await Booking.find();
+    const totalRevenue = allBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
 
     // Monthly revenue for chart (last 6 months)
     const monthlyRevenue = [];
@@ -32,8 +37,7 @@ router.get('/stats', async (req, res, next) => {
       const start = new Date(d.getFullYear(), d.getMonth(), 1);
       const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
       const monthBookings = await Booking.find({
-        createdAt: { $gte: start, $lte: end },
-        paymentStatus: 'Paid'
+        createdAt: { $gte: start, $lte: end }
       });
       const rev = monthBookings.reduce((sum, b) => sum + b.totalAmount, 0);
       monthlyRevenue.push({ month: monthNames[d.getMonth()], revenue: rev, bookings: monthBookings.length });
@@ -41,9 +45,9 @@ router.get('/stats', async (req, res, next) => {
 
     // Recent bookings
     const recentBookings = await Booking.find()
-      .populate('resort', 'name')
-      .populate('room', 'roomNumber category')
-      .populate('customer', 'name checkIn checkOut adults children')
+      .populate('resortId', 'name')
+      .populate('roomId', 'roomNumber category')
+      .populate('customerId', 'name checkIn checkOut adults children')
       .sort({ createdAt: -1 })
       .limit(5);
 

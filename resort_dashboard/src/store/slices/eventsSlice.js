@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import API from '../../api';
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchEvents = createAsyncThunk('events/fetchAll', async (params, { rejectWithValue }) => {
   try {
-    const { data } = await API.get('/events', { params });
+    const { data } = await axios.get(`${API_BASE}/events`, { params });
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to fetch events');
@@ -12,7 +14,7 @@ export const fetchEvents = createAsyncThunk('events/fetchAll', async (params, { 
 
 export const createEvent = createAsyncThunk('events/create', async (eventData, { rejectWithValue }) => {
   try {
-    const { data } = await API.post('/events', eventData);
+    const { data } = await axios.post(`${API_BASE}/events`, eventData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to create event');
@@ -21,7 +23,7 @@ export const createEvent = createAsyncThunk('events/create', async (eventData, {
 
 export const updateEvent = createAsyncThunk('events/update', async ({ id, ...eventData }, { rejectWithValue }) => {
   try {
-    const { data } = await API.put(`/events/${id}`, eventData);
+    const { data } = await axios.put(`${API_BASE}/events/${id}`, eventData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to update event');
@@ -30,7 +32,7 @@ export const updateEvent = createAsyncThunk('events/update', async ({ id, ...eve
 
 export const deleteEvent = createAsyncThunk('events/delete', async (id, { rejectWithValue }) => {
   try {
-    await API.delete(`/events/${id}`);
+    await axios.delete(`${API_BASE}/events/${id}`);
     return id;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to delete event');
@@ -57,5 +59,5 @@ const eventsSlice = createSlice({
   },
 });
 
-export const { clearError } = eventsSlice.actions;
+// export const { clearError } = eventsSlice.actions;
 export default eventsSlice.reducer;

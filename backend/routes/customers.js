@@ -2,6 +2,7 @@ const router = require('express').Router();
 const Customer = require('../models/Customer');
 const Booking = require('../models/Booking');
 
+
 // GET all customers
 router.get('/', async (req, res, next) => {
   try {
@@ -26,9 +27,9 @@ router.get('/:id', async (req, res, next) => {
   try {
     const customer = await Customer.findById(req.params.id);
     if (!customer) return res.status(404).json({ message: 'Customer not found' });
-    const bookings = await Booking.find({ customer: req.params.id })
-      .populate('resort', 'name')
-      .populate('room', 'roomNumber category')
+    const bookings = await Booking.find({ customerId: req.params.id })
+      .populate('resortId', 'name')
+      .populate('roomId', 'roomNumber category')
       .sort({ checkIn: -1 });
     res.json({ ...customer.toObject(), bookings });
   } catch (err) {
@@ -52,6 +53,16 @@ router.put('/:id', async (req, res, next) => {
   try {
     const updated = await Customer.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updated) return res.status(404).json({ message: 'Customer not found' });
+
+    // If bookingStatus or paymentStatus is updated, apply it to all related bookings
+    const bookingUpdates = {};
+    if (req.body.bookingStatus) bookingUpdates.bookingStatus = req.body.bookingStatus;
+    if (req.body.paymentStatus) bookingUpdates.paymentStatus = req.body.paymentStatus;
+
+    if (Object.keys(bookingUpdates).length > 0) {
+      await Booking.updateMany({ customerId: req.params.id }, { $set: bookingUpdates });
+    }
+
     res.json(updated);
   } catch (err) {
     next(err);

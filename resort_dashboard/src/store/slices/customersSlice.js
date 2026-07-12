@@ -1,27 +1,29 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import API from '../../api';
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchCustomers = createAsyncThunk('customers/fetchAll', async (params, { rejectWithValue }) => {
   try {
-    const { data } = await API.get('/customers', { params });
+    const { data } = await axios.get(`${API_BASE}/customers`, { params });
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to fetch customers');
   }
 });
 
-export const fetchCustomerDetail = createAsyncThunk('customers/fetchOne', async (id, { rejectWithValue }) => {
-  try {
-    const { data } = await API.get(`/customers/${id}`);
-    return data;
-  } catch (err) {
-    return rejectWithValue(err.response?.data?.message || 'Failed to fetch customer');
-  }
-});
+// export const fetchCustomerDetail = createAsyncThunk('customers/fetchOne', async (id, { rejectWithValue }) => {
+//   try {
+//     const { data } = await axios.get(`${API_BASE}/customers/${id}`);
+//     return data;
+//   } catch (err) {
+//     return rejectWithValue(err.response?.data?.message || 'Failed to fetch customer');
+//   }
+// });
 
 export const createCustomer = createAsyncThunk('customers/create', async (customerData, { rejectWithValue }) => {
   try {
-    const { data } = await API.post('/customers', customerData);
+    const { data } = await axios.post(`${API_BASE}/customers`, customerData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to create customer');
@@ -30,7 +32,7 @@ export const createCustomer = createAsyncThunk('customers/create', async (custom
 
 export const updateCustomer = createAsyncThunk('customers/update', async ({ id, ...customerData }, { rejectWithValue }) => {
   try {
-    const { data } = await API.put(`/customers/${id}`, customerData);
+    const { data } = await axios.put(`${API_BASE}/customers/${id}`, customerData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to update customer');
@@ -39,7 +41,7 @@ export const updateCustomer = createAsyncThunk('customers/update', async ({ id, 
 
 export const deleteCustomer = createAsyncThunk('customers/delete', async (id, { rejectWithValue }) => {
   try {
-    await API.delete(`/customers/${id}`);
+    await axios.delete(`${API_BASE}/customers/${id}`);
     return id;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to delete customer');
@@ -55,7 +57,7 @@ const customersSlice = createSlice({
       .addCase(fetchCustomers.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(fetchCustomers.fulfilled, (state, action) => { state.loading = false; state.items = action.payload; })
       .addCase(fetchCustomers.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
-      .addCase(fetchCustomerDetail.fulfilled, (state, action) => { state.selectedCustomer = action.payload; })
+      // .addCase(fetchCustomerDetail.fulfilled, (state, action) => { state.selectedCustomer = action.payload; })
       .addCase(createCustomer.fulfilled, (state, action) => { state.items.unshift(action.payload); })
       .addCase(updateCustomer.fulfilled, (state, action) => {
         const idx = state.items.findIndex(c => c._id === action.payload._id);
@@ -67,5 +69,5 @@ const customersSlice = createSlice({
   },
 });
 
-export const { clearError } = customersSlice.actions;
+// export const { clearError } = customersSlice.actions;
 export default customersSlice.reducer;

@@ -1,7 +1,5 @@
 import {
-  Box, Flex, Text, Icon, IconButton, useDisclosure, Drawer, DrawerOverlay,
-  DrawerContent, DrawerBody, VStack, DrawerCloseButton,
-  Image
+  Box, Flex, Text, IconButton, Drawer, VStack, Image
 } from '@chakra-ui/react';
 import { Menu as MenuIcon } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -10,6 +8,7 @@ import {
   Users, PartyPopper,
 } from 'lucide-react';
 import YashResortWhite from "../assets/yesh resort White.png";
+import { useState } from 'react';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
@@ -31,8 +30,8 @@ const pageTitles = {
 
 const Navbar = () => {
   const location = useLocation();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  
+  const [isOpen, setIsOpen] = useState(false);
+
   const pageTitle = pageTitles[location.pathname] || 'Dashboard';
 
   return (
@@ -54,16 +53,16 @@ const Navbar = () => {
           px={{ base: 4, md: 8 }}
           py={4}
         >
-          {/* Left: Mobile menu + Page title */}
           <Flex align="center" gap={3}>
             <IconButton
               display={{ base: 'flex', md: 'none' }}
-              icon={<Icon as={MenuIcon} />}
+              onClick={() => setIsOpen(true)}
               variant="ghost"
-              onClick={onOpen}
               aria-label="Menu"
               size="sm"
-            />
+            >
+              <MenuIcon size={20} />
+            </IconButton>
             <Box>
               <Text
                 fontFamily="'Cormorant Garamond', serif"
@@ -80,7 +79,6 @@ const Navbar = () => {
             </Box>
           </Flex>
 
-          {/* Right: Static Brand/Info */}
           <Flex align="center" gap={3}>
              <Text fontSize="14px" fontWeight="600" color="#3D2010" display={{ base: 'none', sm: 'block' }}>
                Admin Panel
@@ -89,46 +87,47 @@ const Navbar = () => {
         </Flex>
       </Box>
 
-      {/* Mobile Drawer */}
-      <Drawer isOpen={isOpen} onClose={onClose} placement="left">
-        <DrawerOverlay bg="rgba(61, 32, 16, 0.4)" backdropFilter="blur(8px)" />
-        <DrawerContent bg="#3D2010" maxW="280px">
-          <DrawerCloseButton color="white" />
-          <DrawerBody pt={8}>
-            <Flex align="center" gap={3} mb={8}>
-              <Flex w="40px" h="40px" bg="rgba(197, 160, 89, 0.15)" borderRadius="12px" align="center" justify="center">
-                <Image src={YashResortWhite} alt="Yash Resort" />
+      <Drawer.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)} placement="start">
+        <Drawer.Backdrop bg="rgba(61, 32, 16, 0.4)" backdropFilter="blur(8px)" />
+        <Drawer.Positioner>
+          <Drawer.Content bg="#3D2010" maxW="280px">
+            <Drawer.Body pt={8}>
+              <Flex align="center" gap={3} mb={8}>
+                <Flex w="40px" h="40px" bg="rgba(197, 160, 89, 0.15)" borderRadius="12px" align="center" justify="center">
+                  <Image src={YashResortWhite} alt="Yash Resort" />
+                </Flex>
+                <Text fontFamily="'Cormorant Garamond', serif" fontSize="20px" fontWeight="600" color="white">
+                  Yash Resorts
+                </Text>
               </Flex>
-              <Text fontFamily="'Cormorant Garamond', serif" fontSize="20px" fontWeight="600" color="white">
-                Yash Resorts
-              </Text>
-            </Flex>
-            <VStack spacing={1} align="stretch">
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.path;
-                return (
-                  <NavLink key={item.path} to={item.path} onClick={onClose} style={{ textDecoration: 'none' }}>
-                    <Flex
-                      align="center"
-                      gap={3}
-                      px={4}
-                      py={3}
-                      borderRadius="12px"
-                      bg={isActive ? 'rgba(197, 160, 89, 0.15)' : 'transparent'}
-                      color={isActive ? '#C5A059' : 'rgba(255,255,255,0.6)'}
-                      fontWeight={isActive ? '600' : '400'}
-                      fontSize="14px"
-                    >
-                      <Icon as={item.icon} boxSize={5} />
-                      <Text>{item.label}</Text>
-                    </Flex>
-                  </NavLink>
-                );
-              })}
-            </VStack>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
+              <VStack gap={1} align="stretch">
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  const IconComp = item.icon;
+                  return (
+                    <NavLink key={item.path} to={item.path} onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
+                      <Flex
+                        align="center"
+                        gap={3}
+                        px={4}
+                        py={3}
+                        borderRadius="12px"
+                        bg={isActive ? 'rgba(197, 160, 89, 0.15)' : 'transparent'}
+                        color={isActive ? '#C5A059' : 'rgba(255,255,255,0.6)'}
+                        fontWeight={isActive ? '600' : '400'}
+                        fontSize="14px"
+                      >
+                        <IconComp size={20} />
+                        <Text>{item.label}</Text>
+                      </Flex>
+                    </NavLink>
+                  );
+                })}
+              </VStack>
+            </Drawer.Body>
+          </Drawer.Content>
+        </Drawer.Positioner>
+      </Drawer.Root>
     </>
   );
 };

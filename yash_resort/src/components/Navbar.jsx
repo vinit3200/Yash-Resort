@@ -32,7 +32,6 @@ const Navbar = () => {
     { label: "Events", href: "/#events" },
     { label: "Gallery", href: "/gallery" },
     { label: "Contact", href: "/contact" },
-    { label: "Book Now", href: "/book" },
   ];
 
   return (

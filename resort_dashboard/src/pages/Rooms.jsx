@@ -1,28 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Flex, Button, Icon, useDisclosure, Badge, useToast, Text } from '@chakra-ui/react';
+import { Box, Flex, Button, Badge, Text } from '@chakra-ui/react';
 import { Plus, BedDouble } from 'lucide-react';
 import { fetchRooms, createRoom, updateRoom, deleteRoom } from '../store/slices/roomsSlice';
 import { fetchResorts } from '../store/slices/resortsSlice';
 import DataTable from '../components/DataTable';
 import FormModal from '../components/FormModal';
+import { toaster } from '../utils/toaster';
 
-const categoryColors = { Classic: '#7A7A7A', Executive: '#3D2010', Villa: '#C5A059', Suite: '#8B6914' };
+const categoryColors = { Classic: '#7A7A7A', Executive: '#3D2010', 'Cottage/Villa': '#C5A059', Suite: '#8B6914' };
 
 const Rooms = () => {
   const dispatch = useDispatch();
   const { items, loading } = useSelector(state => state.rooms);
   const resorts = useSelector(state => state.resorts.items);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
   const [editData, setEditData] = useState(null);
-  const toast = useToast();
 
   useEffect(() => { dispatch(fetchRooms()); dispatch(fetchResorts()); }, [dispatch]);
 
   const roomFields = useMemo(() => [
     { name: 'resort', label: 'Resort', type: 'select', required: true, options: resorts.map(r => ({ value: r._id, label: r.name })) },
     { name: 'roomNumber', label: 'Room Number', required: true },
-    { name: 'category', label: 'Category', type: 'select', required: true, options: ['Classic', 'Executive', 'Villa', 'Suite'] },
+    { name: 'category', label: 'Category', type: 'select', required: true, options: ['Classic', 'Executive', 'Cottage/Villa', 'Suite'] },
     { name: 'price', label: 'Price per Night (₹)', type: 'number', required: true },
     { name: 'capacity', label: 'Capacity', type: 'number', defaultValue: '2' },
     { name: 'amenities', label: 'Amenities (comma separated)' },
@@ -41,20 +41,18 @@ const Rooms = () => {
 
   const handleEdit = (row) => {
     setEditData({ ...row, resort: row.resort?._id || row.resort, amenities: Array.isArray(row.amenities) ? row.amenities.join(', ') : row.amenities });
-    onOpen();
+    setIsOpen(true);
   };
 
   const handleDelete = async (id) => {
     await dispatch(deleteRoom(id)).unwrap();
-    toast({ title: 'Room deleted', status: 'success', duration: 2000, position: 'top' });
+    toaster.create({ title: 'Room deleted', type: 'success', duration: 2000 });
   };
-
-
 
   const columns = useMemo(() => [
     { header: 'Room', render: (row) => (
       <Flex align="center" gap={3}>
-        <Flex w="40px" h="40px" bg="rgba(197,160,89,0.08)" borderRadius="12px" align="center" justify="center"><Icon as={BedDouble} boxSize={4} color="#C5A059" /></Flex>
+        <Flex w="40px" h="40px" bg="rgba(197,160,89,0.08)" borderRadius="12px" align="center" justify="center"><BedDouble size={16} color="#C5A059" /></Flex>
         <Box><Text fontSize="14px" fontWeight="600">Room {row.roomNumber}</Text><Text fontSize="12px" color="#7A7A7A">{row.resort?.name}</Text></Box>
       </Flex>
     )},
@@ -69,12 +67,12 @@ const Rooms = () => {
 
   return (
     <Box>
-      <Flex justify="space-between" align="center" mb={6}>
+      <Flex justify="space-between" align="center" mb={10}>
         <Text fontFamily="'Cormorant Garamond', serif" fontSize="20px" fontWeight="500" color="#7A7A7A">Manage rooms across resorts</Text>
-        <Button bg="#3D2010" color="white" _hover={{ bg: '#2A1309' }} borderRadius="12px" leftIcon={<Icon as={Plus} boxSize={4} />} onClick={() => { setEditData(null); onOpen(); }} fontSize="14px">Add Room</Button>
+        <Button px={4} bg="#3D2010" color="white" _hover={{ bg: '#2A1309' }} borderRadius="12px" onClick={() => { setEditData(null); setIsOpen(true); }} fontSize="14px"><Plus size={16} /> Add Room</Button>
       </Flex>
-      <DataTable columns={columns} data={items} loading={loading} onEdit={handleEdit} onDelete={handleDelete} searchPlaceholder="Search rooms..." filters={[{ key: 'category', label: 'Category', options: ['Classic', 'Executive', 'Villa', 'Suite'] }, { key: 'status', label: 'Status', options: ['Available', 'Booked', 'Maintenance'] }]} />
-      <FormModal isOpen={isOpen} onClose={onClose} title={editData ? 'Edit Room' : 'Add New Room'} fields={roomFields} onSubmit={handleSubmit} initialData={editData} />
+      <DataTable columns={columns} data={items} loading={loading} onEdit={handleEdit} onDelete={handleDelete} searchPlaceholder="Search rooms..." filters={[{ key: 'category', label: 'Category', options: ['Classic', 'Executive', 'Cottage/Villa', 'Suite'] }, { key: 'status', label: 'Status', options: ['Available', 'Booked', 'Maintenance'] }]} />
+      <FormModal isOpen={isOpen} onClose={() => setIsOpen(false)} title={editData ? 'Edit Room' : 'Add New Room'} fields={roomFields} onSubmit={handleSubmit} initialData={editData} />
     </Box>
   );
 };

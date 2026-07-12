@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import API from '../../api';
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchDashboard = createAsyncThunk('dashboard/fetch', async (_, { rejectWithValue }) => {
   try {
-    const { data } = await API.get('/dashboard/stats');
+    const { data } = await axios.get(`${API_BASE}/dashboard/stats`);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to fetch dashboard');

@@ -12,9 +12,6 @@ import WhatsAppButton from './components/WhatsAppButton'
 import ScrollToTop from './components/ScrollToTop'
 
 
-import { ChakraProvider } from '@chakra-ui/react';
-import BookingTheme from './components/BookingForm/BookingTheme';
-
 function App() {
   return (
     <>

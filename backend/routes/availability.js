@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
     }
 
     // 1. Find all rooms of this category in this resort
-    const rooms = await Room.find({ resort: resortId, category: roomType });
+    const rooms = await Room.find({ resort: resortId, category: roomType, status: { $ne: 'Maintenance' } });
     const totalRoomsInCategory = rooms.length;
 
     if (totalRoomsInCategory === 0) {

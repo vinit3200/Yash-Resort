@@ -1,9 +1,9 @@
-import { Box, VStack, Text, Flex, Icon, Divider, Image } from '@chakra-ui/react';
+import { Box, VStack, Text, Flex, Separator, Image } from '@chakra-ui/react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Building2, BedDouble, CalendarCheck,
-  Users, PartyPopper
+  Users, PartyPopper, Calendar, MessageSquare
 } from 'lucide-react';
 import YashResortWhite from "../assets/yesh resort White.png";
 
@@ -14,7 +14,9 @@ const navItems = [
   { label: 'Resorts', icon: Building2, path: '/resorts' },
   { label: 'Rooms', icon: BedDouble, path: '/rooms' },
   { label: 'Bookings', icon: CalendarCheck, path: '/bookings' },
+  { label: 'Availability', icon: Calendar, path: '/availability' },
   { label: 'Customers', icon: Users, path: '/customers' },
+  { label: 'Enquiries', icon: MessageSquare, path: '/feedbacks' },
   { label: 'Events', icon: PartyPopper, path: '/events' },
 ];
 
@@ -71,7 +73,7 @@ const Sidebar = () => {
       </Flex>
 
       {/* Navigation */}
-      <VStack spacing={1} px={4} py={6} flex={1} align="stretch">
+      <VStack gap={1} px={4} py={6} flex={1} align="stretch">
         <Text
           fontSize="10px"
           fontWeight="600"
@@ -86,6 +88,7 @@ const Sidebar = () => {
         {navItems.map((item) => {
           const isActive = location.pathname === item.path ||
             (item.path !== '/' && location.pathname.startsWith(item.path));
+          const IconComp = item.icon;
           return (
             <NavLink key={item.path} to={item.path} style={{ textDecoration: 'none' }}>
               <MotionBox
@@ -122,7 +125,7 @@ const Sidebar = () => {
                       borderRadius="0 4px 4px 0"
                     />
                   )}
-                  <Icon as={item.icon} boxSize={5} />
+                  <IconComp size={20} />
                   <Text>{item.label}</Text>
                 </Flex>
               </MotionBox>
@@ -133,7 +136,7 @@ const Sidebar = () => {
 
       {/* Bottom Section */}
       <Box px={4} pb={6}>
-        <Divider borderColor="rgba(255,255,255,0.08)" mb={4} />
+        <Separator borderColor="rgba(255,255,255,0.08)" mb={4} />
         <Text textAlign="center" fontSize="10px" color="rgba(255,255,255,0.3)">
           © 2026 Yash Resorts
         </Text>

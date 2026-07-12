@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import axios from "axios";
 import FadeIn from "./FadeIn";
 import BookingFormModal from "./BookingFormModal";
 import heroImage from "../assets/resort_img1.webp";
@@ -16,6 +15,8 @@ import CottageImage2 from "../assets/Yash Resort Rooms/_ROB7290.jpg";
 
 import SuiteImage from "../assets/Yash Resort Rooms/_ROB6193.jpg";
 import SuiteImage1 from "../assets/Yash Resort Rooms/_ROB6252.jpg";
+// import SuiteImage2 from "../assets/Yash Resort Rooms/_ROB6235.jpg"; 
+import roomsData from "../assets/rooms.json";
 import { getAmenityIconComponent } from "../utils/amenityIcons";
 import { 
   Users, 
@@ -36,8 +37,6 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // Map image names to actual imports
 const imageMap = {  
@@ -73,6 +72,52 @@ const iconMap = {
   trees: Trees
 };
 
+// Process rooms data to map image and icon references
+const ROOMS_DATA = (roomsData.rooms ?? []).map((room) => {
+  const mappedImage = imageMap[room.image] ?? heroImage;
+  const gallerySource =
+    Array.isArray(room.gallery) && room.gallery.length > 0
+      ? room.gallery
+      : [room.image];
+  const mappedGallery = gallerySource
+    .map((img) => imageMap[img] ?? mappedImage)
+    .filter(Boolean);
+
+  const baseAmenities = Array.isArray(room.amenities) ? room.amenities : [];
+  const fullAmenitiesSource =
+    Array.isArray(room.fullAmenities) && room.fullAmenities.length > 0
+      ? room.fullAmenities
+      : baseAmenities.map((amenity) => ({
+          name: amenity,
+          description: "Included with your stay"
+        }));
+
+  const mappedFullAmenities = fullAmenitiesSource.map((amenity) => {
+    const normalizedAmenity =
+      typeof amenity === "string" ? { name: amenity } : amenity || {};
+    const iconKey =
+      typeof normalizedAmenity.icon === "string"
+        ? normalizedAmenity.icon.toLowerCase()
+        : "";
+    const inferredIcon = getAmenityIconComponent(normalizedAmenity.name, Bed);
+
+    return {
+      ...normalizedAmenity,
+      name: normalizedAmenity.name ?? "Amenity",
+      description: normalizedAmenity.description ?? "Included with your stay",
+      iconComponent: iconMap[iconKey] ?? inferredIcon
+    };
+  });
+
+  return {
+    ...room,
+    image: mappedImage,
+    gallery: mappedGallery.length > 0 ? mappedGallery : [mappedImage],
+    amenities: baseAmenities,
+    fullAmenities: mappedFullAmenities
+  };
+});
+
 const mapRoomToFormType = (room) => {
   const roomMeta = `${room?.category ?? ""} ${room?.name ?? ""}`.toLowerCase();
 
@@ -81,7 +126,7 @@ const mapRoomToFormType = (room) => {
   }
 
   if (roomMeta.includes("villa") || roomMeta.includes("cottage")) {
-    return "Cottage / Villa";
+    return "Cottage/Villa";
   }
 
   if (roomMeta.includes("deluxe") || roomMeta.includes("executive")) {
@@ -94,79 +139,9 @@ const mapRoomToFormType = (room) => {
 const RoomDetails = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
-  const [room, setRoom] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const room = ROOMS_DATA.find(r => r.id === parseInt(roomId));
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-
-  const processRoomData = useCallback((data) => {
-    const mappedImage = imageMap[data.image] ?? heroImage;
-    const gallerySource =
-      Array.isArray(data.gallery) && data.gallery.length > 0
-        ? data.gallery
-        : [data.image];
-    const mappedGallery = gallerySource
-      .map((img) => imageMap[img] ?? mappedImage)
-      .filter(Boolean);
-
-    const baseAmenities = Array.isArray(data.amenities) ? data.amenities : [];
-    const fullAmenitiesSource =
-      Array.isArray(data.fullAmenities) && data.fullAmenities.length > 0
-        ? data.fullAmenities
-        : baseAmenities.map((amenity) => ({
-            name: amenity,
-            description: "Included with your stay"
-          }));
-
-    const mappedFullAmenities = fullAmenitiesSource.map((amenity) => {
-      const normalizedAmenity =
-        typeof amenity === "string" ? { name: amenity } : amenity || {};
-      const iconKey =
-        typeof normalizedAmenity.icon === "string"
-          ? normalizedAmenity.icon.toLowerCase()
-          : "";
-      const inferredIcon = getAmenityIconComponent(normalizedAmenity.name, Bed);
-
-      return {
-        ...normalizedAmenity,
-        name: normalizedAmenity.name ?? "Amenity",
-        description: normalizedAmenity.description ?? "Included with your stay",
-        iconComponent: iconMap[iconKey] ?? inferredIcon
-      };
-    });
-
-    return {
-      ...data,
-      image: mappedImage,
-      gallery: mappedGallery.length > 0 ? mappedGallery : [mappedImage],
-      amenities: baseAmenities,
-      fullAmenities: mappedFullAmenities
-    };
-  }, []);
-
-  useEffect(() => {
-    const fetchRoom = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/rooms/${roomId}`);
-        const processed = processRoomData(response.data);
-        setRoom(processed);
-      } catch (error) {
-        console.error("Failed to fetch room details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRoom();
-  }, [roomId, processRoomData]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-cream gap-4">
-        <div className="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-gold uppercase tracking-[4px] text-[10px] animate-pulse">Retrieving Sanctuary Details...</p>
-      </div>
-    );
-  }
 
   if (!room) {
     return (

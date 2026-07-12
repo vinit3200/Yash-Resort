@@ -1,41 +1,43 @@
 import React, { useState } from "react";
+import axios from "axios";
 import FadeIn from "./FadeIn";
 import heroImage from "../assets/resort_img1.webp";
 
 const Contact = () => {
   const [form, setForm] = useState({
-    name: "", email: "", phone: "", subject: "General Inquiry", checkIn: "", checkOut: "", message: "",
+    name: "", email: "", phone: "", subject: "Feedback", message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) =>
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
-    // Construct WA Message
-    const whatsappNumber = "919665925051";
-    const message = `*Inquiry from Yash Resort Website*%0A%0A` +
-      `*Name:* ${form.name}%0A` +
-      `*Email:* ${form.email}%0A` +
-      `*Phone:* ${form.phone}%0A` +
-      `*Subject:* ${form.subject}%0A` +
-      `*Check-In:* ${form.checkIn}%0A` +
-      `*Check-Out:* ${form.checkOut}%0A%0A` +
-      `*Message:* ${form.message}`;
-
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
-    
-    setSubmitted(true);
-    // Open WA
-    window.open(whatsappUrl, "_blank");
-    
-    setTimeout(() => setSubmitted(false), 4000);
-
-    setForm({
-      name: "", email: "", phone: "", subject: "General Inquiry", checkIn: "", checkOut: "", message: "",
-    });
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      await axios.post(`${API_BASE}/feedbacks`, {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        subject: form.subject,
+        message: form.message
+      });
+      
+      setSubmitted(true);
+      setForm({
+        name: "", email: "", phone: "", subject: "Feedback", message: "",
+      });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      console.error("Feedback submission failed:", err);
+      alert("Something went wrong. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -152,39 +154,23 @@ const Contact = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-[3px] text-primary/80 mb-2">Check-In Date</label>
-                    <input
-                      type="date" name="checkIn" value={form.checkIn} onChange={handleChange} required
-                      className="w-full bg-transparent border-b border-primary/20 py-3 text-sm text-primary focus:outline-none focus:border-gold transition-colors duration-300"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-[3px] text-primary/80 mb-2">Check-Out Date</label>
-                    <input
-                      type="date" name="checkOut" value={form.checkOut} onChange={handleChange} required
-                      className="w-full bg-transparent border-b border-primary/20 py-3 text-sm text-primary focus:outline-none focus:border-gold transition-colors duration-300"
-                    />
-                  </div>
-                </div>
-
                 <div>
                   <label className="block text-[10px] uppercase tracking-[3px] text-primary/80 mb-2">Message</label>
                   <textarea
                     name="message" value={form.message} onChange={handleChange} required rows={5}
-                    placeholder="Tell us how we can help..."
+                    placeholder="Tell us about your experience..."
                     className="w-full bg-transparent border-b border-primary/20 py-3 text-sm text-primary placeholder:text-primary/40 focus:outline-none focus:border-gold transition-colors duration-300 resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="group/btn relative overflow-hidden bg-primary text-white px-10 py-4 active:scale-[0.97] transition-all duration-300 cursor-pointer rounded-sm border-none mt-4"
+                  disabled={loading}
+                  className="group/btn relative overflow-hidden bg-primary text-white px-10 py-4 active:scale-[0.97] transition-all duration-300 cursor-pointer rounded-sm border-none mt-4 disabled:opacity-50"
                 >
                   <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold w-0 h-0 transition-all duration-500 ease-out group-hover/btn:w-[20em] group-hover/btn:h-[20em] z-0"></span>
                   <span className="relative z-10 text-[10px] tracking-[4px] uppercase font-medium">
-                    Send Message
+                    {loading ? "Submitting..." : "Submit Feedback"}
                   </span>
                 </button>
               </form>

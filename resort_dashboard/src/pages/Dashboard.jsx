@@ -27,7 +27,11 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const { stats, monthlyRevenue, recentBookings, upcomingEvents, loading } = useSelector(state => state.dashboard);
 
-  useEffect(() => { dispatch(fetchDashboard()); }, [dispatch]);
+  useEffect(() => {
+    dispatch(fetchDashboard());
+    const interval = setInterval(() => dispatch(fetchDashboard()), 30000);
+    return () => clearInterval(interval);
+  }, [dispatch]);
 
   if (loading && !stats) {
     return (
@@ -121,10 +125,10 @@ const Dashboard = () => {
               recentBookings.map((b, i) => (
                 <Flex key={b._id || i} justify="space-between" align="center" py={3} borderBottom={i < recentBookings.length - 1 ? '1px solid' : 'none'} borderColor="#F0E6D4">
                   <Box>
-                    <Text fontSize="14px" fontWeight="600" color="#3D2010">{b.customer?.name}</Text>
-                    <Text fontSize="12px" color="#7A7A7A">{b.resort?.name || '—'}{b.room ? ` · Room ${b.room?.roomNumber}` : ' · Room TBD'}</Text>
+                    <Text fontSize="14px" fontWeight="600" color="#3D2010">{b.customerId?.name}</Text>
+                    <Text fontSize="12px" color="#7A7A7A">{b.resortId?.name || '—'}{b.roomId ? ` · Room ${b.roomId?.roomNumber}` : ' · Room TBD'}</Text>
                   </Box>
-                  <Badge bg={b.paymentStatus === 'Paid' ? 'green.50' : 'orange.50'} color={b.paymentStatus === 'Paid' ? 'green.600' : 'orange.600'} borderRadius="8px" px={3} py={1} fontSize="11px" fontWeight="600">
+                  <Badge bg={b.paymentStatus === 'paid' ? 'green.50' : 'orange.50'} color={b.paymentStatus === 'paid' ? 'green.600' : 'orange.600'} borderRadius="8px" px={3} py={1} fontSize="11px" fontWeight="600">
                     {b.paymentStatus}
                   </Badge>
                 </Flex>

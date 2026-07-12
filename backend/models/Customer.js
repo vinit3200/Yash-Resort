@@ -10,6 +10,9 @@ const customerSchema = new mongoose.Schema({
   children: { type: Number, default: 0 },
   roomType: { type: String, enum: ['Classic', 'Executive', 'Cottage/Villa', 'Suite'], default: 'Classic' },
   roomCount: { type: Number, default: 1 },
+  totalAmount: { type: Number, default: 0 },
+  bookingStatus: { type: String, enum: ['confirmed', 'check-in', 'check-out', 'cancelled'], default: 'confirmed' },
+  paymentStatus: { type: String, enum: ['paid', 'pending'], default: 'pending' },
   specialRequests: { type: String, default: '' },
 }, { timestamps: true });
 

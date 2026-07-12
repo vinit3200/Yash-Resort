@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import API from '../../api';
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchRooms = createAsyncThunk('rooms/fetchAll', async (params, { rejectWithValue }) => {
   try {
-    const { data } = await API.get('/rooms', { params });
+    const { data } = await axios.get(`${API_BASE}/rooms`, { params });
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to fetch rooms');
@@ -12,7 +14,7 @@ export const fetchRooms = createAsyncThunk('rooms/fetchAll', async (params, { re
 
 export const createRoom = createAsyncThunk('rooms/create', async (roomData, { rejectWithValue }) => {
   try {
-    const { data } = await API.post('/rooms', roomData);
+    const { data } = await axios.post(`${API_BASE}/rooms`, roomData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to create room');
@@ -21,7 +23,7 @@ export const createRoom = createAsyncThunk('rooms/create', async (roomData, { re
 
 export const updateRoom = createAsyncThunk('rooms/update', async ({ id, ...roomData }, { rejectWithValue }) => {
   try {
-    const { data } = await API.put(`/rooms/${id}`, roomData);
+    const { data } = await axios.put(`${API_BASE}/rooms/${id}`, roomData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to update room');
@@ -30,7 +32,7 @@ export const updateRoom = createAsyncThunk('rooms/update', async ({ id, ...roomD
 
 export const deleteRoom = createAsyncThunk('rooms/delete', async (id, { rejectWithValue }) => {
   try {
-    await API.delete(`/rooms/${id}`);
+    await axios.delete(`${API_BASE}/rooms/${id}`);
     return id;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to delete room');
@@ -57,5 +59,5 @@ const roomsSlice = createSlice({
   },
 });
 
-export const { clearError } = roomsSlice.actions;
+// export const { clearError } = roomsSlice.actions;
 export default roomsSlice.reducer;

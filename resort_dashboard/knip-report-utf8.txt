@@ -1,0 +1,15 @@
+﻿Unused files (3)
+src/components/Layout.jsx        
+src/components/ProtectedRoute.jsx
+src/components/Toaster.jsx       
+Unused dependencies (2)
+@emotion/styled  package.json:15:6
+react-icons      package.json:22:6
+Unused exports (7)
+clearError           src/store/slices/resortsSlice.js:62:16  
+clearError           src/store/slices/roomsSlice.js:62:16    
+fetchAvailability    src/store/slices/bookingsSlice.js:15:14 
+clearError           src/store/slices/bookingsSlice.js:72:16 
+fetchCustomerDetail  src/store/slices/customersSlice.js:15:14
+clearError           src/store/slices/customersSlice.js:72:16
+clearError           src/store/slices/eventsSlice.js:62:16   

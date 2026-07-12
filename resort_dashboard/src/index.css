@@ -14,6 +14,26 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root {
+  --brand-50: #FAF6F0;
+  --brand-100: #F0E6D4;
+  --brand-200: #E0CDA8;
+  --brand-300: #C5A059;
+  --brand-400: #8B6914;
+  --brand-500: #3D2010;
+  --brand-600: #33190C;
+  --brand-700: #2A1309;
+  --brand-800: #1F0E07;
+  --brand-900: #150904;
+  --cream: #FAF6F0;
+  --gold: #C5A059;
+  --deep-brown: #3D2010;
+  --secondary-text: #7A7A7A;
+  --card-bg: #FFFFFF;
+  --sidebar-bg: #3D2010;
+  --border-light: #E8E0D6;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -22,7 +42,7 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C5A059;
+  background: var(--gold);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {

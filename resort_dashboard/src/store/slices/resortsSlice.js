@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import API from '../../api';
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchResorts = createAsyncThunk('resorts/fetchAll', async (params, { rejectWithValue }) => {
   try {
-    const { data } = await API.get('/resorts', { params });
+    const { data } = await axios.get(`${API_BASE}/resorts`, { params });
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to fetch resorts');
@@ -12,7 +14,7 @@ export const fetchResorts = createAsyncThunk('resorts/fetchAll', async (params, 
 
 export const createResort = createAsyncThunk('resorts/create', async (resortData, { rejectWithValue }) => {
   try {
-    const { data } = await API.post('/resorts', resortData);
+    const { data } = await axios.post(`${API_BASE}/resorts`, resortData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to create resort');
@@ -21,7 +23,7 @@ export const createResort = createAsyncThunk('resorts/create', async (resortData
 
 export const updateResort = createAsyncThunk('resorts/update', async ({ id, ...resortData }, { rejectWithValue }) => {
   try {
-    const { data } = await API.put(`/resorts/${id}`, resortData);
+    const { data } = await axios.put(`${API_BASE}/resorts/${id}`, resortData);
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to update resort');
@@ -30,7 +32,7 @@ export const updateResort = createAsyncThunk('resorts/update', async ({ id, ...r
 
 export const deleteResort = createAsyncThunk('resorts/delete', async (id, { rejectWithValue }) => {
   try {
-    await API.delete(`/resorts/${id}`);
+    await axios.delete(`${API_BASE}/resorts/${id}`);
     return id;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to delete resort');
@@ -57,5 +59,5 @@ const resortsSlice = createSlice({
   },
 });
 
-export const { clearError } = resortsSlice.actions;
+// export const { clearError } = resortsSlice.actions;
 export default resortsSlice.reducer;
